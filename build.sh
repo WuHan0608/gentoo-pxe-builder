@@ -11,12 +11,12 @@ mkdir -p iso
 pushd iso
 	base_url="${MIRROR}/releases/${ARCH}/autobuilds"
 
-	latest_iso=$(curl "${base_url}/latest-iso.txt" 2>/dev/null | grep -v '#')
+	latest_iso=$(curl "${base_url}/"latest-install-amd64-minimal.txt 2>/dev/null | grep -v '#' | awk '{print $1}')
 	iso=$(basename "${latest_iso}")
 
 	wget -nc "${base_url}/${latest_iso}" || die "Could not download iso"
 	wget -nc "${base_url}/${latest_iso}.DIGESTS.asc" || die "Could not download digests"
-	wget -nc "${base_url}/${latest_iso}.CONTENTS" || die "Could not download contents"
+	wget -nc "${base_url}/${latest_iso}.CONTENTS.gz" || die "Could not download contents"
 	sha512_digests=$(grep -A1 SHA512 "${iso}.DIGESTS.asc" | grep -v '^--')
 	gpg --verify "${iso}.DIGESTS.asc" || die "Insecure digests"
 	echo "${sha512_digests}" | sha512sum -c || die "Checksum validation failed"
@@ -24,7 +24,7 @@ popd
 mkdir mnt
 sudo mount -o loop iso/${iso} mnt/
 
-cp mnt/isolinux/gentoo .
+cp mnt/boot/gentoo .
 
 mkdir squashmnt squash
 sudo mount -t squashfs -o loop mnt/image.squashfs squashmnt/
@@ -45,9 +45,10 @@ sudo rm -rf squash
 
 mkdir igz
 pushd igz
-	xzcat ../mnt/isolinux/gentoo.igz | sudo cpio -idv &>/dev/null
+	xzcat ../mnt/boot/gentoo.igz | sudo cpio -idv &>/dev/null
 
-	patch < ../files/init.livecd.patch
+	sudo patch < ../files/init.livecd.patch
+    sudo patch -d etc/ < ../files/initrd.defaults.patch
 
 	sudo mkdir -p mnt/cdrom
 	sudo mv ../image.squashfs mnt/cdrom/

@@ -1,0 +1,11 @@
+--- etc/initrd.defaults.orig	2020-07-12 08:46:58.771885920 +0800
++++ etc/initrd.defaults	2020-07-12 08:47:18.220081608 +0800
+@@ -107,7 +107,7 @@
+ ZFS_ENC_OPENED_LOCKFILE='/tmp/ZFS.opened'
+ 
+ # Flag for if ok when using CDROOT
+-got_good_root='0'
++got_good_root='1'
+ # if LOOP found on root before mount, trigger Unpacking additional packages
+ got_loop_wo_mount='0'
+ 
